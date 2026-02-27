@@ -2,12 +2,21 @@
 数据初始化脚本
 将前端静态数据导入到后端数据库
 """
+import os
+import sys
+
+# 添加当前目录到路径
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from sqlalchemy.orm import Session
-from main import SessionLocal
-from main import (
-    Profile, ProjectCategory, Project, Experience,
-    SkillCategory, Skill, SocialLink
-)
+
+# 延迟导入，避免循环导入
+def get_models():
+    from main import (
+        Profile, ProjectCategory, Project, Experience,
+        SkillCategory, Skill, SocialLink, SessionLocal
+    )
+    return Profile, ProjectCategory, Project, Experience, SkillCategory, Skill, SocialLink, SessionLocal
 
 # 前端静态数据（从 profile.ts 提取）
 FRONTEND_DATA = {
@@ -179,9 +188,8 @@ FRONTEND_DATA = {
 }
 
 
-def init_profile(db: Session):
+def init_profile(db: Session, Profile):
     """初始化个人资料"""
-    # 检查是否已存在
     existing = db.query(Profile).first()
     if existing:
         print("  个人资料已存在，跳过")
@@ -194,16 +202,14 @@ def init_profile(db: Session):
     print("  ✓ 个人资料已导入")
 
 
-def init_project_categories(db: Session):
+def init_project_categories(db: Session, ProjectCategory):
     """初始化作品类别"""
-    # 获取所有唯一的类别
     categories = set()
     for project in FRONTEND_DATA["projects"]:
         categories.add(project["category"])
     
     category_map = {}
     for idx, category_name in enumerate(sorted(categories)):
-        # 检查是否已存在
         existing = db.query(ProjectCategory).filter(ProjectCategory.name == category_name).first()
         if existing:
             category_map[category_name] = existing.id
@@ -222,10 +228,9 @@ def init_project_categories(db: Session):
     return category_map
 
 
-def init_projects(db: Session, category_map: dict):
+def init_projects(db: Session, Project, category_map):
     """初始化作品项目"""
     for idx, project_data in enumerate(FRONTEND_DATA["projects"]):
-        # 检查是否已存在
         existing = db.query(Project).filter(Project.title == project_data["title"]).first()
         if existing:
             print(f"  项目 '{project_data['title']}' 已存在，跳过")
@@ -255,10 +260,9 @@ def init_projects(db: Session, category_map: dict):
         print(f"  ✓ 项目 '{project_data['title']}' 已导入")
 
 
-def init_experiences(db: Session):
+def init_experiences(db: Session, Experience):
     """初始化经验背景"""
     for idx, exp_data in enumerate(FRONTEND_DATA["experiences"]):
-        # 检查是否已存在
         existing = db.query(Experience).filter(
             Experience.title == exp_data["title"],
             Experience.organization == exp_data["organization"]
@@ -283,17 +287,14 @@ def init_experiences(db: Session):
         print(f"  ✓ 经历 '{exp_data['title']}' 已导入")
 
 
-def init_skills(db: Session):
+def init_skills(db: Session, SkillCategory, Skill):
     """初始化技能专长"""
-    # 获取所有唯一的类别
     categories = set()
     for skill in FRONTEND_DATA["skills"]:
         categories.add(skill["category"])
     
-    # 创建类别
     category_map = {}
     for idx, category_name in enumerate(sorted(categories)):
-        # 检查是否已存在
         existing = db.query(SkillCategory).filter(SkillCategory.name == category_name).first()
         if existing:
             category_map[category_name] = existing.id
@@ -308,7 +309,6 @@ def init_skills(db: Session):
         category_map[category_name] = category.id
         print(f"  ✓ 技能类别 '{category_name}' 已导入")
     
-    # 创建技能
     for idx, skill_data in enumerate(FRONTEND_DATA["skills"]):
         category_name = skill_data["category"]
         category_id = category_map.get(category_name)
@@ -317,7 +317,6 @@ def init_skills(db: Session):
             print(f"  ✗ 技能 '{skill_data['name']}' 的类别 '{category_name}' 不存在")
             continue
         
-        # 检查是否已存在
         existing = db.query(Skill).filter(
             Skill.name == skill_data["name"],
             Skill.category_id == category_id
@@ -337,10 +336,9 @@ def init_skills(db: Session):
         print(f"  ✓ 技能 '{skill_data['name']}' 已导入")
 
 
-def init_social_links(db: Session):
+def init_social_links(db: Session, SocialLink):
     """初始化社交链接"""
     for idx, link_data in enumerate(FRONTEND_DATA["social_links"]):
-        # 检查是否已存在
         existing = db.query(SocialLink).filter(SocialLink.platform == link_data["platform"]).first()
         if existing:
             print(f"  社交链接 '{link_data['platform']}' 已存在，跳过")
@@ -358,8 +356,10 @@ def init_social_links(db: Session):
         print(f"  ✓ 社交链接 '{link_data['platform']}' 已导入")
 
 
-def check_database_status(db: Session) -> dict:
+def check_database_status(db: Session, models):
     """检查数据库各表的状态"""
+    Profile, ProjectCategory, Project, Experience, SkillCategory, Skill, SocialLink = models
+    
     tables_to_check = [
         (Profile, "个人资料"),
         (ProjectCategory, "作品类别"),
@@ -385,35 +385,34 @@ def init_database():
     print("开始检查并初始化数据库...")
     print("="*50)
     
+    try:
+        Profile, ProjectCategory, Project, Experience, SkillCategory, Skill, SocialLink, SessionLocal = get_models()
+    except Exception as e:
+        print(f"  ✗ 导入模型失败: {e}")
+        return
+    
     db = SessionLocal()
     try:
-        # 检查数据库状态
         print("\n1. 检查数据库状态:")
-        status = check_database_status(db)
+        status = check_database_status(db, (Profile, ProjectCategory, Project, Experience, SkillCategory, Skill, SocialLink))
         
-        # 2. 初始化个人资料
         print("\n2. 导入个人资料:")
-        init_profile(db)
+        init_profile(db, Profile)
         
-        # 3. 初始化作品类别
         print("\n3. 导入作品类别:")
-        category_map = init_project_categories(db)
+        category_map = init_project_categories(db, ProjectCategory)
         
-        # 4. 初始化作品项目
         print("\n4. 导入作品项目:")
-        init_projects(db, category_map)
+        init_projects(db, Project, category_map)
         
-        # 5. 初始化经验背景
         print("\n5. 导入经验背景:")
-        init_experiences(db)
+        init_experiences(db, Experience)
         
-        # 6. 初始化技能
         print("\n6. 导入技能专长:")
-        init_skills(db)
+        init_skills(db, SkillCategory, Skill)
         
-        # 7. 初始化社交链接
         print("\n7. 导入社交链接:")
-        init_social_links(db)
+        init_social_links(db, SocialLink)
         
         print("\n" + "="*50)
         print("数据库初始化完成！")
@@ -421,8 +420,9 @@ def init_database():
         
     except Exception as e:
         print(f"\n  ✗ 初始化失败: {e}")
+        import traceback
+        traceback.print_exc()
         db.rollback()
-        raise
     finally:
         db.close()
 
