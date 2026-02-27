@@ -1,0 +1,425 @@
+/* ============================================
+   Sketchy Style CSS - Hand-drawn Aesthetic
+   ============================================ */
+
+/* CSS Variables */
+:root {
+  /* Colors */
+  --sketchy-bg: #fffdf5;
+  --sketchy-black: #000000;
+  --sketchy-white: #ffffff;
+  --sketchy-accent: #db7c00;
+  --sketchy-accent-light: #ff9a2e;
+  --sketchy-shadow: rgba(0, 0, 0, 0.2);
+  --sketchy-shadow-hover: rgba(0, 0, 0, 0.35);
+  --sketchy-text: #1a1a1a;
+  --sketchy-text-secondary: #4a4a4a;
+  --sketchy-border-light: #e0e0e0;
+
+  /* Border System */
+  --sketchy-border-width: 2px;
+  --sketchy-border-style: solid;
+  --sketchy-border-color: #000000;
+  --sketchy-border: 2px solid #000000;
+  --sketchy-border-dashed: 2px dashed #000000;
+
+  /* Shadow System - 45 degree hard shadow */
+  --sketchy-shadow-offset: 4px;
+  --sketchy-shadow-blur: 0px;
+  --sketchy-shadow-spread: 0px;
+  --sketchy-box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+  --sketchy-box-shadow-hover: 6px 6px 0px rgba(0, 0, 0, 0.35);
+  --sketchy-box-shadow-accent: 4px 4px 0px #db7c00;
+
+  /* Border Radius - Asymmetric for hand-drawn feel */
+  --sketchy-radius-sm: 4px 8px 6px 10px;
+  --sketchy-radius-md: 8px 12px 10px 14px;
+  --sketchy-radius-lg: 12px 18px 14px 20px;
+  --sketchy-radius-xl: 16px 24px 20px 28px;
+
+  /* Spacing */
+  --sketchy-spacing-xs: 0.25rem;
+  --sketchy-spacing-sm: 0.5rem;
+  --sketchy-spacing-md: 1rem;
+  --sketchy-spacing-lg: 1.5rem;
+  --sketchy-spacing-xl: 2rem;
+
+  /* Transitions */
+  --sketchy-transition-fast: 0.15s ease;
+  --sketchy-transition-normal: 0.25s ease;
+  --sketchy-transition-slow: 0.35s ease;
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+
+/* Paper texture background */
+.sketchy-body {
+  background-color: var(--sketchy-bg);
+  background-image: 
+    radial-gradient(circle at 20% 30%, rgba(0, 0, 0, 0.02) 1px, transparent 1px),
+    radial-gradient(circle at 80% 70%, rgba(0, 0, 0, 0.02) 1px, transparent 1px),
+    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.01) 2px, transparent 2px);
+  background-size: 100px 100px, 150px 150px, 200px 200px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ============================================
+   Button Styles - tpe-btn-sketchy
+   ============================================ */
+
+.tpe-btn-sketchy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sketchy-spacing-sm);
+  padding: var(--sketchy-spacing-sm) var(--sketchy-spacing-lg);
+  font-size: 1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--sketchy-black);
+  background-color: var(--sketchy-white);
+  border: var(--sketchy-border);
+  border-radius: var(--sketchy-radius-md);
+  box-shadow: var(--sketchy-box-shadow);
+  cursor: pointer;
+  transition: all var(--sketchy-transition-normal);
+  position: relative;
+}
+
+.tpe-btn-sketchy:hover {
+  transform: rotate(1deg) translate(1px, 1px);
+  box-shadow: var(--sketchy-box-shadow-hover);
+}
+
+.tpe-btn-sketchy:active {
+  transform: rotate(0deg) translate(2px, 2px);
+  box-shadow: 2px 2px 0px var(--sketchy-shadow);
+}
+
+.tpe-btn-sketchy-primary {
+  background-color: var(--sketchy-accent);
+  color: var(--sketchy-white);
+  border-color: var(--sketchy-black);
+}
+
+.tpe-btn-sketchy-primary:hover {
+  background-color: var(--sketchy-accent-light);
+}
+
+.tpe-btn-sketchy-secondary {
+  background-color: var(--sketchy-white);
+  color: var(--sketchy-black);
+}
+
+.tpe-btn-sketchy:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--sketchy-box-shadow);
+}
+
+/* ============================================
+   Card Styles - tpe-card-sketchy
+   ============================================ */
+
+.tpe-card-sketchy {
+  background-color: var(--sketchy-white);
+  border: var(--sketchy-border);
+  border-radius: var(--sketchy-radius-lg);
+  box-shadow: var(--sketchy-box-shadow);
+  transition: all var(--sketchy-transition-normal);
+  overflow: hidden;
+  transform: rotate(-0.5deg);
+}
+
+.tpe-card-sketchy:hover {
+  transform: rotate(0deg) translate(-2px, -2px);
+  box-shadow: var(--sketchy-box-shadow-hover);
+}
+
+.tpe-card-sketchy-alt {
+  transform: rotate(0.5deg);
+}
+
+.tpe-card-sketchy-alt:hover {
+  transform: rotate(0deg) translate(-2px, -2px);
+}
+
+/* ============================================
+   Input Styles
+   ============================================ */
+
+.tpe-input-sketchy {
+  width: 100%;
+  padding: var(--sketchy-spacing-md);
+  font-size: 1rem;
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--sketchy-text);
+  background-color: var(--sketchy-white);
+  border: var(--sketchy-border);
+  border-radius: var(--sketchy-radius-md);
+  box-shadow: 2px 2px 0px var(--sketchy-shadow);
+  transition: all var(--sketchy-transition-fast);
+}
+
+.tpe-input-sketchy:focus {
+  outline: none;
+  box-shadow: 3px 3px 0px var(--sketchy-accent);
+  border-color: var(--sketchy-accent);
+}
+
+.tpe-input-sketchy::placeholder {
+  color: var(--sketchy-text-secondary);
+}
+
+/* ============================================
+   Tag/Label Styles
+   ============================================ */
+
+.tpe-tag-sketchy {
+  display: inline-block;
+  padding: var(--sketchy-spacing-xs) var(--sketchy-spacing-sm);
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--sketchy-black);
+  background-color: var(--sketchy-white);
+  border: var(--sketchy-border);
+  border-radius: var(--sketchy-radius-sm);
+  box-shadow: 2px 2px 0px var(--sketchy-shadow);
+}
+
+.tpe-tag-sketchy-accent {
+  background-color: var(--sketchy-accent);
+  color: var(--sketchy-white);
+}
+
+/* ============================================
+   Section Title Styles
+   ============================================ */
+
+.tpe-section-title {
+  font-size: 2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--sketchy-black);
+  margin-bottom: var(--sketchy-spacing-xl);
+  text-align: center;
+  position: relative;
+  display: inline-block;
+}
+
+.tpe-section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-1deg);
+  width: 60%;
+  height: 3px;
+  background-color: var(--sketchy-accent);
+  border-radius: 2px;
+}
+
+/* ============================================
+   Navigation Link Styles
+   ============================================ */
+
+.tpe-nav-link {
+  font-size: 1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--sketchy-black);
+  padding: var(--sketchy-spacing-sm) var(--sketchy-spacing-md);
+  border: 2px solid transparent;
+  border-radius: var(--sketchy-radius-sm);
+  transition: all var(--sketchy-transition-fast);
+}
+
+.tpe-nav-link:hover {
+  border: var(--sketchy-border);
+  box-shadow: 2px 2px 0px var(--sketchy-shadow);
+  transform: rotate(-1deg);
+}
+
+.tpe-nav-link.active {
+  background-color: var(--sketchy-accent);
+  color: var(--sketchy-white);
+  border-color: var(--sketchy-black);
+  box-shadow: 2px 2px 0px var(--sketchy-shadow);
+}
+
+/* ============================================
+   Social Link Styles
+   ============================================ */
+
+.tpe-social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background-color: var(--sketchy-white);
+  border: var(--sketchy-border);
+  border-radius: 50%;
+  box-shadow: var(--sketchy-box-shadow);
+  color: var(--sketchy-black);
+  transition: all var(--sketchy-transition-fast);
+}
+
+.tpe-social-link:hover {
+  background-color: var(--sketchy-accent);
+  color: var(--sketchy-white);
+  transform: rotate(5deg) scale(1.1);
+  box-shadow: var(--sketchy-box-shadow-hover);
+}
+
+/* ============================================
+   Timeline Styles
+   ============================================ */
+
+.tpe-timeline-line {
+  width: 2px;
+  background-color: var(--sketchy-black);
+  border-left: 2px dashed var(--sketchy-black);
+}
+
+.tpe-timeline-dot {
+  width: 16px;
+  height: 16px;
+  background-color: var(--sketchy-accent);
+  border: var(--sketchy-border);
+  border-radius: 50%;
+  box-shadow: 2px 2px 0px var(--sketchy-shadow);
+}
+
+/* ============================================
+   Skill Bar Styles
+   ============================================ */
+
+.tpe-skill-bar {
+  height: 12px;
+  background-color: var(--sketchy-white);
+  border: var(--sketchy-border);
+  border-radius: var(--sketchy-radius-sm);
+  overflow: hidden;
+  box-shadow: 2px 2px 0px var(--sketchy-shadow);
+}
+
+.tpe-skill-bar-fill {
+  height: 100%;
+  background-color: var(--sketchy-accent);
+  border-right: var(--sketchy-border);
+  transition: width 1s ease;
+}
+
+/* ============================================
+   Modal Styles
+   ============================================ */
+
+.tpe-modal-sketchy {
+  background-color: var(--sketchy-white);
+  border: var(--sketchy-border);
+  border-radius: var(--sketchy-radius-lg);
+  box-shadow: 8px 8px 0px var(--sketchy-shadow);
+}
+
+.tpe-modal-close {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--sketchy-white);
+  border: var(--sketchy-border);
+  border-radius: 50%;
+  box-shadow: 2px 2px 0px var(--sketchy-shadow);
+  cursor: pointer;
+  transition: all var(--sketchy-transition-fast);
+}
+
+.tpe-modal-close:hover {
+  background-color: var(--sketchy-accent);
+  color: var(--sketchy-white);
+  transform: rotate(90deg);
+}
+
+/* ============================================
+   Filter Button Styles
+   ============================================ */
+
+.tpe-filter-btn {
+  padding: var(--sketchy-spacing-sm) var(--sketchy-spacing-lg);
+  font-size: 0.875rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--sketchy-black);
+  background-color: var(--sketchy-white);
+  border: var(--sketchy-border);
+  border-radius: var(--sketchy-radius-md);
+  box-shadow: 2px 2px 0px var(--sketchy-shadow);
+  cursor: pointer;
+  transition: all var(--sketchy-transition-fast);
+}
+
+.tpe-filter-btn:hover {
+  transform: rotate(-1deg) translate(1px, 1px);
+  box-shadow: 3px 3px 0px var(--sketchy-shadow-hover);
+}
+
+.tpe-filter-btn.active {
+  background-color: var(--sketchy-accent);
+  color: var(--sketchy-white);
+  box-shadow: 2px 2px 0px var(--sketchy-shadow-hover);
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+
+.tpe-rotate-left {
+  transform: rotate(-1deg);
+}
+
+.tpe-rotate-right {
+  transform: rotate(1deg);
+}
+
+.tpe-hand-drawn-border {
+  border: var(--sketchy-border);
+  border-radius: var(--sketchy-radius-md);
+}
+
+.tpe-hard-shadow {
+  box-shadow: var(--sketchy-box-shadow);
+}
+
+.tpe-hard-shadow-hover:hover {
+  box-shadow: var(--sketchy-box-shadow-hover);
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+
+@media (max-width: 768px) {
+  :root {
+    --sketchy-shadow-offset: 3px;
+    --sketchy-box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
+    --sketchy-box-shadow-hover: 4px 4px 0px rgba(0, 0, 0, 0.35);
+  }
+
+  .tpe-section-title {
+    font-size: 1.5rem;
+  }
+
+  .tpe-btn-sketchy {
+    padding: var(--sketchy-spacing-sm) var(--sketchy-spacing-md);
+    font-size: 0.875rem;
+  }
+}

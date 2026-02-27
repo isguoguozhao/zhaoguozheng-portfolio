@@ -1,0 +1,129 @@
+.admin-dashboard {
+  padding-bottom: 40px;
+}
+
+.admin-dashboard-header {
+  margin-bottom: 32px;
+}
+
+.admin-dashboard-header h2 {
+  margin: 0 0 8px;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.admin-dashboard-header p {
+  margin: 0;
+  color: #666;
+}
+
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.admin-stat-card {
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 4px 4px 0 #000;
+  transition: all 0.2s;
+}
+
+.admin-stat-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 #000;
+}
+
+.admin-stat-icon {
+  width: 48px;
+  height: 48px;
+  background: #db7c00;
+  border: 2px solid #000;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.admin-stat-icon svg {
+  width: 24px;
+  height: 24px;
+  color: #fff;
+}
+
+.admin-stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.admin-stat-label {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.admin-section {
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 4px 4px 0 #000;
+}
+
+.admin-section h3 {
+  margin: 0 0 20px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #eee;
+}
+
+.admin-quick-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.admin-quick-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #f8f8f8;
+  border: 2px solid #000;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #333;
+  transition: all 0.2s;
+}
+
+.admin-quick-link:hover {
+  background: #db7c00;
+  color: #fff;
+  transform: translate(-2px, -2px);
+  box-shadow: 3px 3px 0 #000;
+}
+
+.admin-quick-link svg {
+  width: 20px;
+  height: 20px;
+}
+
+.admin-quick-link span {
+  font-weight: 600;
+}
+
+.admin-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  font-size: 1.125rem;
+  color: #666;
+}
