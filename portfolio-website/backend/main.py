@@ -796,16 +796,16 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     # Validate passwords match
     if user_data.password != user_data.confirm_password:
         raise HTTPException(status_code=400, detail="Passwords do not match")
-    
+
     # Validate password length
     if len(user_data.password) < 6:
         raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
-    
+
     # Check if username exists
     existing = db.query(User).filter(User.username == user_data.username).first()
     if existing:
         raise HTTPException(status_code=400, detail="Username already exists")
-    
+
     # Create user
     user = User(
         username=user_data.username,
@@ -816,6 +816,47 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
     return user
+
+# 兼容前端的 API 路径
+@app.post("/api/users/register")
+async def register_compat(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """兼容前端表单格式的注册"""
+    body = await request.json()
+    username = body.get("username")
+    password = body.get("password")
+    confirm_password = body.get("confirm_password")
+
+    if not username or not password:
+        raise HTTPException(status_code=400, detail="Username and password required")
+
+    if password != confirm_password:
+        raise HTTPException(status_code=400, detail="Passwords do not match")
+
+    if len(password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+
+    existing = db.query(User).filter(User.username == username).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Username already exists")
+
+    user = User(
+        username=username,
+        hashed_password=get_password_hash(password),
+        points=0
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    access_token = create_access_token(data={"user_id": user.id})
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": UserResponse.from_orm(user)
+    }
 
 @app.post("/api/auth/login")
 async def user_login(user_data: UserLogin, db: Session = Depends(get_db)):
@@ -833,8 +874,41 @@ async def user_login(user_data: UserLogin, db: Session = Depends(get_db)):
         "user": UserResponse.from_orm(user)
     }
 
+# 兼容前端的 API 路径
+@app.post("/api/users/login")
+async def user_login_compat(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """兼容前端表单格式的登录"""
+    body = await request.json()
+    username = body.get("username")
+    password = body.get("password")
+    
+    if not username or not password:
+        raise HTTPException(status_code=400, detail="Username and password required")
+    
+    user = db.query(User).filter(User.username == username).first()
+    if not user or not verify_password(password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password"
+        )
+    
+    access_token = create_access_token(data={"user_id": user.id})
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": UserResponse.from_orm(user)
+    }
+
 @app.get("/api/user/profile", response_model=UserResponse)
 async def get_user_profile(current_user: User = Depends(get_current_user_user)):
+    return current_user
+
+# 兼容前端的 API 路径
+@app.get("/api/users/me", response_model=UserResponse)
+async def get_user_profile_compat(current_user: User = Depends(get_current_user_user)):
     return current_user
 
 @app.put("/api/user/profile", response_model=UserResponse)
@@ -848,10 +922,34 @@ async def update_user_profile(
         if existing:
             raise HTTPException(status_code=400, detail="Username already exists")
         current_user.username = profile_data.username
-    
+
     if profile_data.avatar:
         current_user.avatar = profile_data.avatar
-    
+
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+# 兼容前端的 API 路径
+@app.put("/api/users/me", response_model=UserResponse)
+async def update_user_profile_compat(
+    request: Request,
+    current_user: User = Depends(get_current_user_user),
+    db: Session = Depends(get_db)
+):
+    body = await request.json()
+    username = body.get("username")
+    avatar = body.get("avatar")
+
+    if username and username != current_user.username:
+        existing = db.query(User).filter(User.username == username).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Username already exists")
+        current_user.username = username
+
+    if avatar:
+        current_user.avatar = avatar
+
     db.commit()
     db.refresh(current_user)
     return current_user
@@ -880,12 +978,40 @@ async def upload_user_avatar(
     # Update user avatar
     current_user.avatar = f"/uploads/{filename}"
     db.commit()
-    
+
+    return {"avatar_url": current_user.avatar}
+
+# 兼容前端的 API 路径
+@app.post("/api/users/avatar")
+async def upload_user_avatar_compat(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user_user),
+    db: Session = Depends(get_db)
+):
+    allowed_types = ["image/jpeg", "image/png", "image/webp"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Invalid file type")
+
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:  # 5MB limit for avatars
+        raise HTTPException(status_code=400, detail="File too large")
+
+    # Save file
+    ext = Path(file.filename).suffix
+    filename = f"avatar_{current_user.id}_{int(datetime.utcnow().timestamp())}{ext}"
+    filepath = UPLOAD_DIR / filename
+    with open(filepath, "wb") as f:
+        f.write(content)
+
+    # Update user avatar
+    current_user.avatar = f"/uploads/{filename}"
+    db.commit()
+
     return {"avatar_url": current_user.avatar}
 
 # Visit Stats
 @app.post("/api/stats/visit")
-async def record_visit(request, db: Session = Depends(get_db)):
+async def record_visit(request: Request, db: Session = Depends(get_db)):
     visit = VisitLog(
         ip_address=request.client.host,
         user_agent=request.headers.get("user-agent")
@@ -898,6 +1024,12 @@ async def record_visit(request, db: Session = Depends(get_db)):
 async def get_visit_stats(db: Session = Depends(get_db)):
     total = db.query(VisitLog).count()
     return VisitStats(total_visits=total)
+
+# 兼容前端的 API 路径
+@app.get("/api/stats")
+async def get_stats_compat(db: Session = Depends(get_db)):
+    total = db.query(VisitLog).count()
+    return {"total_visits": total, "today_visits": 0}
 
 # Email Verification
 import random
@@ -942,14 +1074,75 @@ async def verify_email(
         EmailVerification.code == request.code,
         EmailVerification.expires_at > datetime.utcnow()
     ).order_by(EmailVerification.created_at.desc()).first()
-    
+
     if not verification:
         raise HTTPException(status_code=400, detail="Invalid or expired code")
-    
+
     # Update user email
     current_user.email = verification.email
     db.commit()
-    
+
+    return {"message": "Email bound successfully", "email": current_user.email}
+
+# 兼容前端的 API 路径
+@app.post("/api/users/email/code")
+async def send_email_code_compat(
+    request: Request,
+    current_user: User = Depends(get_current_user_user),
+    db: Session = Depends(get_db)
+):
+    body = await request.json()
+    email = body.get("email")
+
+    if not email:
+        raise HTTPException(status_code=400, detail="Email required")
+
+    # Generate 6-digit alphanumeric code
+    code = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
+
+    # Save verification code
+    verification = EmailVerification(
+        user_id=current_user.id,
+        email=email,
+        code=code,
+        expires_at=datetime.utcnow() + timedelta(minutes=5)
+    )
+    db.add(verification)
+    db.commit()
+
+    return {
+        "message": "Verification code sent",
+        "code": code,
+        "expires_in": "5 minutes"
+    }
+
+@app.post("/api/users/email/bind")
+async def verify_email_compat(
+    request: Request,
+    current_user: User = Depends(get_current_user_user),
+    db: Session = Depends(get_db)
+):
+    body = await request.json()
+    email = body.get("email")
+    code = body.get("code")
+
+    if not email or not code:
+        raise HTTPException(status_code=400, detail="Email and code required")
+
+    # Find valid verification code
+    verification = db.query(EmailVerification).filter(
+        EmailVerification.user_id == current_user.id,
+        EmailVerification.code == code,
+        EmailVerification.expires_at > datetime.utcnow()
+    ).order_by(EmailVerification.created_at.desc()).first()
+
+    if not verification:
+        raise HTTPException(status_code=400, detail="Invalid or expired code")
+
+    # Update user email
+    current_user.email = email
+    db.commit()
+
     return {"message": "Email bound successfully", "email": current_user.email}
 
 # Check-in System
@@ -1010,27 +1203,85 @@ async def check_in(
         total_points=current_user.points
     )
 
+# 兼容前端的 API 路径
+@app.post("/api/users/checkin")
+async def check_in_compat(
+    current_user: User = Depends(get_current_user_user),
+    db: Session = Depends(get_db)
+):
+    from datetime import date
+
+    today = date.today()
+    today_start = datetime.combine(today, datetime.min.time())
+    today_end = datetime.combine(today, datetime.max.time())
+
+    # Check if already checked in today
+    existing = db.query(CheckIn).filter(
+        CheckIn.user_id == current_user.id,
+        CheckIn.check_in_date >= today_start,
+        CheckIn.check_in_date <= today_end
+    ).first()
+
+    if existing:
+        return {
+            "success": False,
+            "points": 0,
+            "message": "Already checked in today, come back tomorrow",
+            "total_points": current_user.points
+        }
+
+    # Generate random points (1-10)
+    points_earned = random.randint(1, 10)
+
+    # Create check-in record
+    checkin = CheckIn(
+        user_id=current_user.id,
+        check_in_date=datetime.utcnow(),
+        points_earned=points_earned
+    )
+    db.add(checkin)
+
+    # Update user points
+    current_user.points += points_earned
+
+    # Add points log
+    points_log = PointsLog(
+        user_id=current_user.id,
+        points=points_earned,
+        reason="Daily check-in"
+    )
+    db.add(points_log)
+
+    db.commit()
+
+    return {
+        "success": True,
+        "points": points_earned,
+        "message": f"Check-in successful! You earned {points_earned} points",
+        "total_points": current_user.points
+    }
+
 @app.get("/api/checkin/status", response_model=CheckInStatus)
 async def get_checkin_status(
     current_user: User = Depends(get_current_user_user),
     db: Session = Depends(get_db)
 ):
     from datetime import date
-    
+
     today = date.today()
     today_start = datetime.combine(today, datetime.min.time())
     today_end = datetime.combine(today, datetime.max.time())
-    
+
     today_checkin = db.query(CheckIn).filter(
         CheckIn.user_id == current_user.id,
         CheckIn.check_in_date >= today_start,
         CheckIn.check_in_date <= today_end
     ).first()
-    
+
     last_checkin = db.query(CheckIn).filter(
         CheckIn.user_id == current_user.id
     ).order_by(CheckIn.check_in_date.desc()).first()
-    
+
     return CheckInStatus(
         has_checked_in_today=today_checkin is not None,
         last_check_in_date=last_checkin.check_in_date if last_checkin else None
@@ -1050,6 +1301,11 @@ async def get_points_log(
 @app.get("/api/points/total")
 async def get_total_points(current_user: User = Depends(get_current_user_user)):
     return {"total_points": current_user.points}
+
+# 兼容前端的 API 路径
+@app.get("/api/users/points")
+async def get_user_points_compat(current_user: User = Depends(get_current_user_user)):
+    return {"points": current_user.points}
 
 @app.on_event("startup")
 async def startup_event():
