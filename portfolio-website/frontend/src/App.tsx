@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
+import { UserProvider } from './contexts/UserContext';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Projects from './components/Projects';
@@ -9,15 +10,19 @@ import About from './components/About';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import AdminLayout from './admin/AdminLayout';
-import Login from './admin/pages/Login';
+import AdminLogin from './admin/pages/Login';
 import Dashboard from './admin/pages/Dashboard';
-import Profile from './admin/pages/Profile';
+import AdminProfile from './admin/pages/Profile';
 import Images from './admin/pages/Images';
 import Categories from './admin/pages/Categories';
 import ProjectsAdmin from './admin/pages/Projects';
 import Experiences from './admin/pages/Experiences';
 import Skills from './admin/pages/Skills';
 import Social from './admin/pages/Social';
+// User pages
+import UserLogin from './pages/Login';
+import UserRegister from './pages/Register';
+import UserProfile from './pages/Profile';
 import './styles/global.css';
 
 // Main Portfolio Page
@@ -73,34 +78,57 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+// User Protected Route Component
+function UserProtectedRoute({ children }: { children: React.ReactNode }) {
+  const token = localStorage.getItem('user_token');
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+}
+
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Main Portfolio */}
-        <Route path="/" element={<Portfolio />} />
-        
-        {/* Admin Routes */}
-        <Route path="/admin/login" element={<Login />} />
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute>
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<Dashboard />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="images" element={<Images />} />
-          <Route path="categories" element={<Categories />} />
-          <Route path="projects" element={<ProjectsAdmin />} />
-          <Route path="experiences" element={<Experiences />} />
-          <Route path="skills" element={<Skills />} />
-          <Route path="social" element={<Social />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <UserProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Main Portfolio */}
+          <Route path="/" element={<Portfolio />} />
+
+          {/* User Routes */}
+          <Route path="/login" element={<UserLogin />} />
+          <Route path="/register" element={<UserRegister />} />
+          <Route
+            path="/profile"
+            element={
+              <UserProtectedRoute>
+                <UserProfile />
+              </UserProtectedRoute>
+            }
+          />
+
+          {/* Admin Routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="profile" element={<AdminProfile />} />
+            <Route path="images" element={<Images />} />
+            <Route path="categories" element={<Categories />} />
+            <Route path="projects" element={<ProjectsAdmin />} />
+            <Route path="experiences" element={<Experiences />} />
+            <Route path="skills" element={<Skills />} />
+            <Route path="social" element={<Social />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </UserProvider>
   );
 }
 

@@ -1,0 +1,42 @@
+/* Visit Stats Component */
+
+.visit-stats {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 2px solid #000;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #333;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+  transition: all 0.25s ease;
+}
+
+.visit-stats:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.15);
+}
+
+.visit-stats-icon {
+  color: #db7c00;
+}
+
+.visit-stats-label {
+  color: #666;
+}
+
+.visit-stats-value {
+  font-weight: 700;
+  color: #000;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .visit-stats {
+    padding: 3px 8px;
+    font-size: 0.75rem;
+  }
+}

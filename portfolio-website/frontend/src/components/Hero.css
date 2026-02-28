@@ -26,13 +26,23 @@
   align-items: center;
 }
 
+/* Hero Header - Title and Visit Stats */
+.hero-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
 .hero-title {
   font-size: clamp(2.5rem, 8vw, 4rem);
   font-weight: var(--font-weight-bold);
   text-transform: uppercase;
   letter-spacing: 2px;
   color: var(--color-text-primary);
-  margin-bottom: var(--spacing-md);
+  margin: 0;
   line-height: var(--line-height-tight);
   text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.1);
 }

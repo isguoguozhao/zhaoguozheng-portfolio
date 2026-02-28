@@ -50,6 +50,50 @@
   gap: var(--spacing-md);
 }
 
+/* User Avatar */
+.navbar-user {
+  margin-left: var(--spacing-sm);
+}
+
+.navbar-avatar-link {
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  overflow: hidden;
+  transition: all var(--transition-fast);
+  box-shadow: 2px 2px 0 var(--color-shadow);
+}
+
+.navbar-avatar-link:hover {
+  transform: rotate(5deg) scale(1.1);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.3);
+  border-color: var(--color-accent);
+}
+
+.navbar-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.navbar-avatar-default {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-white);
+  color: var(--color-text-secondary);
+}
+
+/* Mobile User Link */
+.navbar-mobile-user {
+  background: var(--color-accent);
+  color: var(--color-white) !important;
+}
+
 .navbar-link {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);

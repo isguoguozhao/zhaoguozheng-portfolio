@@ -1,0 +1,372 @@
+/* Profile Page Styles */
+
+.profile-page {
+  min-height: 100vh;
+  background: var(--sketchy-bg, #fffdf5);
+  padding: 80px 20px 40px;
+}
+
+.profile-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Header */
+.profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.profile-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #000;
+  margin: 0;
+}
+
+.profile-back-link {
+  color: #666;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.profile-back-link:hover {
+  color: #db7c00;
+}
+
+/* Profile Card */
+.profile-card {
+  padding: 32px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Avatar */
+.profile-avatar-section {
+  margin-bottom: 20px;
+}
+
+.profile-avatar-wrapper {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+  border-radius: 50%;
+  cursor: pointer;
+  overflow: hidden;
+  border: 3px solid #000;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
+  transition: all 0.25s ease;
+}
+
+.profile-avatar-wrapper:hover {
+  transform: scale(1.05) rotate(2deg);
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.3);
+}
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-avatar-default {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  color: #999;
+}
+
+.profile-avatar-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.profile-avatar-wrapper:hover .profile-avatar-overlay {
+  opacity: 1;
+}
+
+/* Username */
+.profile-username-section {
+  margin-bottom: 24px;
+}
+
+.profile-username-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.profile-username-display h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: #000;
+}
+
+.profile-edit-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #666;
+}
+
+.profile-edit-btn:hover {
+  background: #db7c00;
+  color: #fff;
+  transform: rotate(15deg);
+}
+
+.profile-username-edit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.profile-username-edit input {
+  width: 180px;
+}
+
+/* Stats */
+.profile-stats {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  padding-top: 20px;
+  border-top: 2px dashed #ddd;
+}
+
+.profile-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.profile-stat-icon {
+  color: #db7c00;
+}
+
+.profile-stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #000;
+}
+
+.profile-stat-label {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+/* Sections */
+.profile-section {
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.profile-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.profile-section-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  color: #000;
+}
+
+.profile-section-header svg {
+  color: #db7c00;
+}
+
+/* Email */
+.profile-email-bound {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #4caf50;
+  font-weight: 500;
+}
+
+.profile-email-icon {
+  color: #4caf50;
+}
+
+.profile-email-unbound {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.profile-email-unbound > span {
+  color: #999;
+  font-style: italic;
+}
+
+.profile-email-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.profile-email-code {
+  display: flex;
+  gap: 8px;
+}
+
+.profile-email-code input {
+  flex: 1;
+}
+
+.profile-email-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Check-in */
+.profile-checkin {
+  text-align: center;
+}
+
+.profile-checkin-desc {
+  margin: 0 0 16px;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.profile-checkin-message {
+  margin: 12px 0 0;
+  color: #4caf50;
+  font-weight: 500;
+}
+
+/* Actions */
+.profile-actions {
+  margin-top: 24px;
+  text-align: center;
+}
+
+.profile-logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #fff;
+  border: 2px solid #ff4444;
+  border-radius: 8px 12px 10px 14px;
+  color: #ff4444;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 3px 3px 0 rgba(255, 68, 68, 0.2);
+}
+
+.profile-logout-btn:hover {
+  background: #ff4444;
+  color: #fff;
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 rgba(255, 68, 68, 0.3);
+}
+
+/* Admin Entry */
+.profile-admin-entry {
+  margin-top: 32px;
+  text-align: center;
+  padding-top: 24px;
+  border-top: 2px dashed #ddd;
+}
+
+.profile-admin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #f5f5f5;
+  border: 2px solid #000;
+  border-radius: 8px 12px 10px 14px;
+  color: #333;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.25s ease;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.profile-admin-btn:hover {
+  background: #000;
+  color: #fff;
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .profile-page {
+    padding: 72px 16px 32px;
+  }
+
+  .profile-card {
+    padding: 24px 20px;
+  }
+
+  .profile-avatar-wrapper {
+    width: 100px;
+    height: 100px;
+  }
+
+  .profile-stats {
+    gap: 24px;
+  }
+
+  .profile-section {
+    padding: 20px 16px;
+  }
+
+  .profile-email-unbound {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .profile-email-code {
+    flex-direction: column;
+  }
+
+  .profile-email-actions {
+    flex-direction: column;
+  }
+}

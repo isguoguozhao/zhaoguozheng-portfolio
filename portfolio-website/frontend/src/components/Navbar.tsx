@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Menu, X, User } from 'lucide-react';
 import { navItems } from '../data/profile';
+import { useUser } from '../contexts/UserContext';
 import './Navbar.css';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
+  const { userInfo, isLoggedIn } = useUser();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -66,6 +69,26 @@ export default function Navbar() {
               </a>
             </li>
           ))}
+          {/* User Avatar */}
+          <li className="navbar-user">
+            <Link
+              to={isLoggedIn ? '/profile' : '/login'}
+              className="navbar-avatar-link"
+              title={isLoggedIn ? '个人中心' : '登录/注册'}
+            >
+              {isLoggedIn && userInfo?.avatar ? (
+                <img
+                  src={userInfo.avatar}
+                  alt={userInfo.username}
+                  className="navbar-avatar-img"
+                />
+              ) : (
+                <div className="navbar-avatar-default">
+                  <User size={20} />
+                </div>
+              )}
+            </Link>
+          </li>
         </ul>
 
         {/* Mobile Menu Button */}
@@ -92,6 +115,16 @@ export default function Navbar() {
               </a>
             </li>
           ))}
+          {/* Mobile User Link */}
+          <li>
+            <Link
+              to={isLoggedIn ? '/profile' : '/login'}
+              className="navbar-mobile-link navbar-mobile-user"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              {isLoggedIn ? '个人中心' : '登录 / 注册'}
+            </Link>
+          </li>
         </ul>
       </div>
     </nav>

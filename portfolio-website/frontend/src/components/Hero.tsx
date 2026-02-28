@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ChevronDown, Github, Linkedin, Mail } from 'lucide-react';
 import { profile } from '../data/profile';
+import VisitStats from './VisitStats';
 import './Hero.css';
 
 export default function Hero() {
@@ -61,9 +62,12 @@ export default function Hero() {
     <section id="home" className="hero" ref={heroRef}>
       <div className="hero-container">
         <div className="hero-content">
-          <h1 ref={titleRef} className="hero-title">
-            {profile.name}
-          </h1>
+          <div className="hero-header">
+            <h1 ref={titleRef} className="hero-title">
+              {profile.name}
+            </h1>
+            <VisitStats />
+          </div>
           <p ref={subtitleRef} className="hero-subtitle">
             {profile.title}
           </p>
