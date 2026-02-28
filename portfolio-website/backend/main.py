@@ -124,6 +124,51 @@ class Profile(Base):
     phone = Column(String, nullable=False)
     location = Column(String, nullable=False)
 
+# User System Models
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, nullable=False, index=True)
+    email = Column(String, unique=True, nullable=True)
+    hashed_password = Column(String, nullable=False)
+    avatar = Column(String, nullable=True)
+    points = Column(Integer, default=0)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class VisitLog(Base):
+    __tablename__ = "visit_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    ip_address = Column(String, nullable=True)
+    user_agent = Column(String, nullable=True)
+    visited_at = Column(DateTime, default=datetime.utcnow)
+
+class EmailVerification(Base):
+    __tablename__ = "email_verifications"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    email = Column(String, nullable=False)
+    code = Column(String, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class CheckIn(Base):
+    __tablename__ = "checkins"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    check_in_date = Column(DateTime, nullable=False)
+    points_earned = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class PointsLog(Base):
+    __tablename__ = "points_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    points = Column(Integer, nullable=False)
+    reason = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 # Create tables
 Base.metadata.create_all(bind=engine)
 
@@ -285,6 +330,57 @@ class ProfileResponse(ProfileUpdate):
     id: int
     class Config:
         from_attributes = True
+
+# User System Schemas
+class UserRegister(BaseModel):
+    username: str
+    password: str
+    confirm_password: str
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    email: Optional[str] = None
+    avatar: Optional[str] = None
+    points: int
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class UserProfileUpdate(BaseModel):
+    username: Optional[str] = None
+    avatar: Optional[str] = None
+
+class EmailBindRequest(BaseModel):
+    email: str
+
+class EmailVerifyRequest(BaseModel):
+    code: str
+
+class CheckInResponse(BaseModel):
+    success: bool
+    points_earned: int
+    message: str
+    total_points: int
+
+class CheckInStatus(BaseModel):
+    has_checked_in_today: bool
+    last_check_in_date: Optional[datetime] = None
+
+class PointsLogResponse(BaseModel):
+    id: int
+    points: int
+    reason: str
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class VisitStats(BaseModel):
+    total_visits: int
 
 # Routes
 @app.get("/")
@@ -673,6 +769,287 @@ async def update_profile(
     db.commit()
     db.refresh(db_profile)
     return db_profile
+
+# User Auth Dependency
+async def get_current_user_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: int = payload.get("user_id")
+        if user_id is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    
+    user = db.query(User).filter(User.id == user_id).first()
+    if user is None:
+        raise credentials_exception
+    return user
+
+# User System Routes
+@app.post("/api/auth/register", response_model=UserResponse)
+async def register(user_data: UserRegister, db: Session = Depends(get_db)):
+    # Validate passwords match
+    if user_data.password != user_data.confirm_password:
+        raise HTTPException(status_code=400, detail="Passwords do not match")
+    
+    # Validate password length
+    if len(user_data.password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+    
+    # Check if username exists
+    existing = db.query(User).filter(User.username == user_data.username).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Username already exists")
+    
+    # Create user
+    user = User(
+        username=user_data.username,
+        hashed_password=get_password_hash(user_data.password),
+        points=0
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+@app.post("/api/auth/login")
+async def user_login(user_data: UserLogin, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.username == user_data.username).first()
+    if not user or not verify_password(user_data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password"
+        )
+    
+    access_token = create_access_token(data={"user_id": user.id})
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": UserResponse.from_orm(user)
+    }
+
+@app.get("/api/user/profile", response_model=UserResponse)
+async def get_user_profile(current_user: User = Depends(get_current_user_user)):
+    return current_user
+
+@app.put("/api/user/profile", response_model=UserResponse)
+async def update_user_profile(
+    profile_data: UserProfileUpdate,
+    current_user: User = Depends(get_current_user_user),
+    db: Session = Depends(get_db)
+):
+    if profile_data.username and profile_data.username != current_user.username:
+        existing = db.query(User).filter(User.username == profile_data.username).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Username already exists")
+        current_user.username = profile_data.username
+    
+    if profile_data.avatar:
+        current_user.avatar = profile_data.avatar
+    
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+@app.post("/api/user/avatar")
+async def upload_user_avatar(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user_user),
+    db: Session = Depends(get_db)
+):
+    allowed_types = ["image/jpeg", "image/png", "image/webp"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=400, detail="Invalid file type")
+    
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:  # 5MB limit for avatars
+        raise HTTPException(status_code=400, detail="File too large")
+    
+    # Save file
+    ext = Path(file.filename).suffix
+    filename = f"avatar_{current_user.id}_{int(datetime.utcnow().timestamp())}{ext}"
+    filepath = UPLOAD_DIR / filename
+    with open(filepath, "wb") as f:
+        f.write(content)
+    
+    # Update user avatar
+    current_user.avatar = f"/uploads/{filename}"
+    db.commit()
+    
+    return {"avatar_url": current_user.avatar}
+
+# Visit Stats
+@app.post("/api/stats/visit")
+async def record_visit(request, db: Session = Depends(get_db)):
+    visit = VisitLog(
+        ip_address=request.client.host,
+        user_agent=request.headers.get("user-agent")
+    )
+    db.add(visit)
+    db.commit()
+    return {"message": "Visit recorded"}
+
+@app.get("/api/stats/visits", response_model=VisitStats)
+async def get_visit_stats(db: Session = Depends(get_db)):
+    total = db.query(VisitLog).count()
+    return VisitStats(total_visits=total)
+
+# Email Verification
+import random
+import string
+
+@app.post("/api/email/send-code")
+async def send_email_code(
+    request: EmailBindRequest,
+    current_user: User = Depends(get_current_user_user),
+    db: Session = Depends(get_db)
+):
+    # Generate 6-digit alphanumeric code
+    code = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
+    
+    # Save verification code
+    verification = EmailVerification(
+        user_id=current_user.id,
+        email=request.email,
+        code=code,
+        expires_at=datetime.utcnow() + timedelta(minutes=5)
+    )
+    db.add(verification)
+    db.commit()
+    
+    # TODO: Send email with code
+    # For now, return the code in response (for testing)
+    return {
+        "message": "Verification code sent",
+        "code": code,  # Remove this in production
+        "expires_in": "5 minutes"
+    }
+
+@app.post("/api/email/verify")
+async def verify_email(
+    request: EmailVerifyRequest,
+    current_user: User = Depends(get_current_user_user),
+    db: Session = Depends(get_db)
+):
+    # Find valid verification code
+    verification = db.query(EmailVerification).filter(
+        EmailVerification.user_id == current_user.id,
+        EmailVerification.code == request.code,
+        EmailVerification.expires_at > datetime.utcnow()
+    ).order_by(EmailVerification.created_at.desc()).first()
+    
+    if not verification:
+        raise HTTPException(status_code=400, detail="Invalid or expired code")
+    
+    # Update user email
+    current_user.email = verification.email
+    db.commit()
+    
+    return {"message": "Email bound successfully", "email": current_user.email}
+
+# Check-in System
+@app.post("/api/checkin", response_model=CheckInResponse)
+async def check_in(
+    current_user: User = Depends(get_current_user_user),
+    db: Session = Depends(get_db)
+):
+    from datetime import date
+    
+    today = date.today()
+    today_start = datetime.combine(today, datetime.min.time())
+    today_end = datetime.combine(today, datetime.max.time())
+    
+    # Check if already checked in today
+    existing = db.query(CheckIn).filter(
+        CheckIn.user_id == current_user.id,
+        CheckIn.check_in_date >= today_start,
+        CheckIn.check_in_date <= today_end
+    ).first()
+    
+    if existing:
+        return CheckInResponse(
+            success=False,
+            points_earned=0,
+            message="Already checked in today, come back tomorrow",
+            total_points=current_user.points
+        )
+    
+    # Generate random points (1-10)
+    points_earned = random.randint(1, 10)
+    
+    # Create check-in record
+    checkin = CheckIn(
+        user_id=current_user.id,
+        check_in_date=datetime.utcnow(),
+        points_earned=points_earned
+    )
+    db.add(checkin)
+    
+    # Update user points
+    current_user.points += points_earned
+    
+    # Add points log
+    points_log = PointsLog(
+        user_id=current_user.id,
+        points=points_earned,
+        reason="Daily check-in"
+    )
+    db.add(points_log)
+    
+    db.commit()
+    
+    return CheckInResponse(
+        success=True,
+        points_earned=points_earned,
+        message=f"Check-in successful! You earned {points_earned} points",
+        total_points=current_user.points
+    )
+
+@app.get("/api/checkin/status", response_model=CheckInStatus)
+async def get_checkin_status(
+    current_user: User = Depends(get_current_user_user),
+    db: Session = Depends(get_db)
+):
+    from datetime import date
+    
+    today = date.today()
+    today_start = datetime.combine(today, datetime.min.time())
+    today_end = datetime.combine(today, datetime.max.time())
+    
+    today_checkin = db.query(CheckIn).filter(
+        CheckIn.user_id == current_user.id,
+        CheckIn.check_in_date >= today_start,
+        CheckIn.check_in_date <= today_end
+    ).first()
+    
+    last_checkin = db.query(CheckIn).filter(
+        CheckIn.user_id == current_user.id
+    ).order_by(CheckIn.check_in_date.desc()).first()
+    
+    return CheckInStatus(
+        has_checked_in_today=today_checkin is not None,
+        last_check_in_date=last_checkin.check_in_date if last_checkin else None
+    )
+
+# Points System
+@app.get("/api/points", response_model=List[PointsLogResponse])
+async def get_points_log(
+    current_user: User = Depends(get_current_user_user),
+    db: Session = Depends(get_db)
+):
+    logs = db.query(PointsLog).filter(
+        PointsLog.user_id == current_user.id
+    ).order_by(PointsLog.created_at.desc()).all()
+    return logs
+
+@app.get("/api/points/total")
+async def get_total_points(current_user: User = Depends(get_current_user_user)):
+    return {"total_points": current_user.points}
 
 @app.on_event("startup")
 async def startup_event():
