@@ -356,6 +356,30 @@ def init_social_links(db: Session, SocialLink):
         print(f"  ✓ 社交链接 '{link_data['platform']}' 已导入")
 
 
+def init_default_user(db: Session, User):
+    """初始化默认测试用户"""
+    # 延迟导入 main 中的函数
+    from main import get_password_hash
+    
+    existing = db.query(User).filter(User.username == "testuser").first()
+    if existing:
+        print("  默认测试用户已存在，跳过")
+        return
+    
+    user = User(
+        username="testuser",
+        email="test@example.com",
+        hashed_password=get_password_hash("test123"),
+        avatar=None,
+        points=100
+    )
+    db.add(user)
+    db.commit()
+    print("  ✓ 默认测试用户已创建")
+    print("    用户名: testuser")
+    print("    密码: test123")
+
+
 def check_database_status(db: Session, models):
     """检查数据库各表的状态"""
     Profile, ProjectCategory, Project, Experience, SkillCategory, Skill, SocialLink = models
@@ -387,6 +411,8 @@ def init_database():
     
     try:
         Profile, ProjectCategory, Project, Experience, SkillCategory, Skill, SocialLink, SessionLocal = get_models()
+        # 导入 User 模型
+        from main import User
     except Exception as e:
         print(f"  ✗ 导入模型失败: {e}")
         return
@@ -413,6 +439,9 @@ def init_database():
         
         print("\n7. 导入社交链接:")
         init_social_links(db, SocialLink)
+        
+        print("\n8. 创建默认测试用户:")
+        init_default_user(db, User)
         
         print("\n" + "="*50)
         print("数据库初始化完成！")
