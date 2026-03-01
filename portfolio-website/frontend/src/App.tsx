@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { UserProvider } from './contexts/UserContext';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -127,6 +128,7 @@ function App() {
             <Route path="social" element={<Social />} />
           </Route>
         </Routes>
+        <SpeedInsights />
       </BrowserRouter>
     </UserProvider>
   );
