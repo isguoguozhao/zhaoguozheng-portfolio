@@ -911,26 +911,47 @@ async def user_login_compat(
     db: Session = Depends(get_db)
 ):
     """兼容前端表单格式的登录"""
-    body = await request.json()
-    username = body.get("username")
-    password = body.get("password")
-    
-    if not username or not password:
-        raise HTTPException(status_code=400, detail="Username and password required")
-    
-    user = db.query(User).filter(User.username == username).first()
-    if not user or not verify_password(password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password"
-        )
-    
-    access_token = create_access_token(data={"user_id": user.id})
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user": UserResponse.from_orm(user)
-    }
+    try:
+        body = await request.json()
+        username = body.get("username")
+        password = body.get("password")
+        
+        if not username or not password:
+            raise HTTPException(status_code=400, detail="Username and password required")
+        
+        user = db.query(User).filter(User.username == username).first()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect username or password"
+            )
+        
+        # Verify password
+        try:
+            password_valid = verify_password(password, user.hashed_password)
+        except Exception as e:
+            print(f"Password verification error: {e}")
+            raise HTTPException(status_code=500, detail=f"Password verification failed: {str(e)}")
+        
+        if not password_valid:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect username or password"
+            )
+        
+        access_token = create_access_token(data={"user_id": user.id})
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": UserResponse.model_validate(user)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Login error: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
 
 @app.get("/api/user/profile", response_model=UserResponse)
 async def get_user_profile(current_user: User = Depends(get_current_user_user)):
