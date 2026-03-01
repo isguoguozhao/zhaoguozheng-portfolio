@@ -76,7 +76,6 @@ export const userApi = {
       username,
       password
     }),
-    }),
 
   // 用户注册
   register: (username: string, password: string, confirmPassword: string) =>
