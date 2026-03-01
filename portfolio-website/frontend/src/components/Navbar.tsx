@@ -53,7 +53,7 @@ export default function Navbar() {
     <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
       <div className="navbar-container">
         <a href="#home" className="navbar-logo" onClick={(e) => handleNavClick(e, '#home')}>
-          赵国政
+          赵国政的简历作品集
         </a>
 
         {/* Desktop Navigation */}

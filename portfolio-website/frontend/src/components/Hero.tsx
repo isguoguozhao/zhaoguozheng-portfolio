@@ -3,6 +3,7 @@ import { gsap } from 'gsap';
 import { ChevronDown, Github, Linkedin, Mail } from 'lucide-react';
 import { profile } from '../data/profile';
 import VisitStats from './VisitStats';
+import RealtimeClock from './RealtimeClock';
 import './Hero.css';
 
 export default function Hero() {
@@ -63,6 +64,7 @@ export default function Hero() {
       <div className="hero-container">
         <div className="hero-content">
           <div className="hero-header">
+            <RealtimeClock />
             <h1 ref={titleRef} className="hero-title">
               {profile.name}
             </h1>
