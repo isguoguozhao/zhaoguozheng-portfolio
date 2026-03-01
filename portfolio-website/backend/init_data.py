@@ -14,9 +14,9 @@ from sqlalchemy.orm import Session
 def get_models():
     from main import (
         Profile, ProjectCategory, Project, Experience,
-        SkillCategory, Skill, SocialLink, SessionLocal
+        SkillCategory, Skill, SocialLink, SessionLocal, User
     )
-    return Profile, ProjectCategory, Project, Experience, SkillCategory, Skill, SocialLink, SessionLocal
+    return Profile, ProjectCategory, Project, Experience, SkillCategory, Skill, SocialLink, SessionLocal, User
 
 # 前端静态数据（从 profile.ts 提取）
 FRONTEND_DATA = {
@@ -358,26 +358,37 @@ def init_social_links(db: Session, SocialLink):
 
 def init_default_user(db: Session, User):
     """初始化默认测试用户"""
-    # 延迟导入 main 中的函数
-    from main import get_password_hash
-    
-    existing = db.query(User).filter(User.username == "testuser").first()
-    if existing:
-        print("  默认测试用户已存在，跳过")
-        return
-    
-    user = User(
-        username="testuser",
-        email="test@example.com",
-        hashed_password=get_password_hash("test123"),
-        avatar=None,
-        points=100
-    )
-    db.add(user)
-    db.commit()
-    print("  ✓ 默认测试用户已创建")
-    print("    用户名: testuser")
-    print("    密码: test123")
+    try:
+        # 延迟导入 main 中的函数
+        from main import get_password_hash
+        
+        existing = db.query(User).filter(User.username == "testuser").first()
+        if existing:
+            print("  默认测试用户已存在，跳过")
+            return
+        
+        print("  正在创建密码哈希...")
+        hashed_pw = get_password_hash("test123")
+        print(f"  密码哈希长度: {len(hashed_pw)}")
+        
+        user = User(
+            username="testuser",
+            email="test@example.com",
+            hashed_password=hashed_pw,
+            avatar=None,
+            points=100
+        )
+        db.add(user)
+        db.commit()
+        print("  ✓ 默认测试用户已创建")
+        print("    用户名: testuser")
+        print("    密码: test123")
+    except Exception as e:
+        print(f"  ✗ 创建默认用户失败: {e}")
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise
 
 
 def check_database_status(db: Session, models):
@@ -410,11 +421,11 @@ def init_database():
     print("="*50)
     
     try:
-        Profile, ProjectCategory, Project, Experience, SkillCategory, Skill, SocialLink, SessionLocal = get_models()
-        # 导入 User 模型
-        from main import User
+        Profile, ProjectCategory, Project, Experience, SkillCategory, Skill, SocialLink, SessionLocal, User = get_models()
     except Exception as e:
         print(f"  ✗ 导入模型失败: {e}")
+        import traceback
+        traceback.print_exc()
         return
     
     db = SessionLocal()
