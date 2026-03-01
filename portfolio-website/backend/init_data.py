@@ -391,6 +391,39 @@ def init_default_user(db: Session, User):
         raise
 
 
+def init_default_admin(db: Session, AdminUser):
+    """初始化默认管理员用户"""
+    try:
+        # 延迟导入 main 中的函数
+        from main import get_password_hash
+        
+        existing = db.query(AdminUser).filter(AdminUser.username == "admin").first()
+        if existing:
+            print("  默认管理员已存在，跳过")
+            return
+        
+        print("  正在创建管理员密码哈希...")
+        hashed_pw = get_password_hash("admin123")
+        
+        admin = AdminUser(
+            username="admin",
+            email="admin@example.com",
+            hashed_password=hashed_pw,
+            is_active=True
+        )
+        db.add(admin)
+        db.commit()
+        print("  ✓ 默认管理员已创建")
+        print("    用户名: admin")
+        print("    密码: admin123")
+    except Exception as e:
+        print(f"  ✗ 创建默认管理员失败: {e}")
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise
+
+
 def check_database_status(db: Session, models):
     """检查数据库各表的状态"""
     Profile, ProjectCategory, Project, Experience, SkillCategory, Skill, SocialLink = models
@@ -453,6 +486,11 @@ def init_database():
         
         print("\n8. 创建默认测试用户:")
         init_default_user(db, User)
+        
+        print("\n9. 创建默认管理员:")
+        # 导入 AdminUser 模型
+        from main import AdminUser
+        init_default_admin(db, AdminUser)
         
         print("\n" + "="*50)
         print("数据库初始化完成！")

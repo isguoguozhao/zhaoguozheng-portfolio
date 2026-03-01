@@ -216,12 +216,17 @@ def get_db():
 
 # Auth functions
 def verify_password(plain_password, hashed_password):
-    # Use bcrypt directly for verification
-    if isinstance(plain_password, str):
-        plain_password = plain_password.encode('utf-8')
-    if isinstance(hashed_password, str):
-        hashed_password = hashed_password.encode('utf-8')
-    return bcrypt.checkpw(plain_password, hashed_password)
+    try:
+        # Use bcrypt directly for verification
+        if isinstance(plain_password, str):
+            plain_password = plain_password.encode('utf-8')
+        if isinstance(hashed_password, str):
+            hashed_password = hashed_password.encode('utf-8')
+        return bcrypt.checkpw(plain_password, hashed_password)
+    except Exception as e:
+        print(f"verify_password error: {e}")
+        print(f"plain_password type: {type(plain_password)}, hashed_password type: {type(hashed_password)}")
+        return False
 
 def get_password_hash(password):
     # bcrypt has a maximum password length of 72 bytes
@@ -940,10 +945,23 @@ async def user_login_compat(
             )
         
         access_token = create_access_token(data={"user_id": user.id})
+        try:
+            user_response = UserResponse.from_orm(user)
+        except Exception as e:
+            print(f"UserResponse serialization error: {e}")
+            # Fallback: manually create dict
+            user_response = {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "avatar": user.avatar,
+                "points": user.points,
+                "created_at": user.created_at.isoformat() if user.created_at else None
+            }
         return {
             "access_token": access_token,
             "token_type": "bearer",
-            "user": UserResponse.model_validate(user)
+            "user": user_response
         }
     except HTTPException:
         raise
