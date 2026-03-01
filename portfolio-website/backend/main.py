@@ -18,9 +18,12 @@ from pathlib import Path
 RAILWAY_ENVIRONMENT = os.getenv("RAILWAY_ENVIRONMENT", "development")
 PORT = int(os.getenv("PORT", "8000"))
 
-# Database setup - use Railway volume path if available
+# Database setup - use Railway/Render volume path if available
 if os.getenv("RAILWAY_VOLUME_MOUNT_PATH"):
     SQLALCHEMY_DATABASE_URL = f"sqlite:///{os.getenv('RAILWAY_VOLUME_MOUNT_PATH')}/portfolio.db"
+elif os.getenv("RENDER"):
+    # Render 平台使用 /tmp 目录（可写）
+    SQLALCHEMY_DATABASE_URL = "sqlite:////tmp/portfolio.db"
 else:
     SQLALCHEMY_DATABASE_URL = "sqlite:///./portfolio.db"
 
