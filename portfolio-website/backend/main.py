@@ -18,16 +18,21 @@ from pathlib import Path
 RAILWAY_ENVIRONMENT = os.getenv("RAILWAY_ENVIRONMENT", "development")
 PORT = int(os.getenv("PORT", "8000"))
 
-# Database setup - use Railway/Render volume path if available
-if os.getenv("RAILWAY_VOLUME_MOUNT_PATH"):
+# Database setup - use Supabase PostgreSQL if available
+if os.getenv("DATABASE_URL"):
+    # Supabase PostgreSQL
+    SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
+    engine = create_engine(SQLALCHEMY_DATABASE_URL)
+elif os.getenv("RAILWAY_VOLUME_MOUNT_PATH"):
     SQLALCHEMY_DATABASE_URL = f"sqlite:///{os.getenv('RAILWAY_VOLUME_MOUNT_PATH')}/portfolio.db"
+    engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 elif os.getenv("RENDER"):
     # Render 平台使用 /tmp 目录（可写）
     SQLALCHEMY_DATABASE_URL = "sqlite:////tmp/portfolio.db"
+    engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 else:
     SQLALCHEMY_DATABASE_URL = "sqlite:///./portfolio.db"
-
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+    engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
