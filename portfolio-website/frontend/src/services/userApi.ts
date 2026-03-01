@@ -72,11 +72,10 @@ export interface VisitStatsResponse {
 export const userApi = {
   // 用户登录
   login: (username: string, password: string) =>
-    userApiInstance.post<LoginResponse>('/api/users/login', new URLSearchParams({
+    userApiInstance.post<LoginResponse>('/api/users/login', {
       username,
       password
-    }), {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    }),
     }),
 
   // 用户注册

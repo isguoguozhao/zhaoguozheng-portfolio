@@ -917,7 +917,20 @@ async def user_login_compat(
 ):
     """兼容前端表单格式的登录"""
     try:
-        body = await request.json()
+        # Try to parse JSON body
+        content_type = request.headers.get('content-type', '')
+        print(f"Login request content-type: {content_type}")
+        
+        try:
+            body = await request.json()
+            print(f"Login request body: {body}")
+        except Exception as e:
+            print(f"Failed to parse JSON: {e}")
+            # Try to get form data
+            form_data = await request.form()
+            body = dict(form_data)
+            print(f"Login request form data: {body}")
+        
         username = body.get("username")
         password = body.get("password")
         
