@@ -50,6 +50,19 @@
   gap: var(--spacing-md);
 }
 
+/* Realtime Clock */
+.navbar-clock {
+  display: flex;
+  align-items: center;
+  margin-right: var(--spacing-md);
+}
+
+@media (max-width: 768px) {
+  .navbar-clock {
+    display: none;
+  }
+}
+
 /* User Avatar */
 .navbar-user {
   margin-left: var(--spacing-sm);

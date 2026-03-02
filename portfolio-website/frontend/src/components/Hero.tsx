@@ -3,7 +3,6 @@ import { gsap } from 'gsap';
 import { ChevronDown, Github, Linkedin, Mail } from 'lucide-react';
 import { profile } from '../data/profile';
 import VisitStats from './VisitStats';
-import RealtimeClock from './RealtimeClock';
 import './Hero.css';
 
 export default function Hero() {
@@ -76,7 +75,6 @@ export default function Hero() {
             {profile.bio}
           </p>
           <div ref={ctaRef} className="hero-cta">
-            <RealtimeClock />
             <button className="btn btn-primary" onClick={handleScrollToProjects}>
               查看作品
             </button>

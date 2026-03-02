@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Menu, X, User } from 'lucide-react';
 import { navItems } from '../data/profile';
 import { useUser } from '../contexts/UserContext';
+import RealtimeClock from './RealtimeClock';
 import './Navbar.css';
 
 export default function Navbar() {
@@ -55,6 +56,11 @@ export default function Navbar() {
         <a href="#home" className="navbar-logo" onClick={(e) => handleNavClick(e, '#home')}>
           赵国政的简历作品集
         </a>
+
+        {/* Realtime Clock */}
+        <div className="navbar-clock">
+          <RealtimeClock />
+        </div>
 
         {/* Desktop Navigation */}
         <ul className="navbar-menu">
