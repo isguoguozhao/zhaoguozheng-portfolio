@@ -64,7 +64,6 @@ export default function Hero() {
       <div className="hero-container">
         <div className="hero-content">
           <div className="hero-header">
-            <RealtimeClock />
             <h1 ref={titleRef} className="hero-title">
               {profile.name}
             </h1>
@@ -77,6 +76,7 @@ export default function Hero() {
             {profile.bio}
           </p>
           <div ref={ctaRef} className="hero-cta">
+            <RealtimeClock />
             <button className="btn btn-primary" onClick={handleScrollToProjects}>
               查看作品
             </button>

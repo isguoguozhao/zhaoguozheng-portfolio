@@ -14,9 +14,9 @@ from sqlalchemy.orm import Session
 def get_models():
     from main import (
         Profile, ProjectCategory, Project, Experience,
-        SkillCategory, Skill, SocialLink, SessionLocal, User
+        SkillCategory, Skill, SocialLink, SessionLocal, User, Image
     )
-    return Profile, ProjectCategory, Project, Experience, SkillCategory, Skill, SocialLink, SessionLocal, User
+    return Profile, ProjectCategory, Project, Experience, SkillCategory, Skill, SocialLink, SessionLocal, User, Image
 
 # 前端静态数据（从 profile.ts 提取）
 FRONTEND_DATA = {
@@ -424,6 +424,41 @@ def init_default_admin(db: Session, AdminUser):
         raise
 
 
+def init_default_images(db: Session, Image):
+    """初始化默认图片到数据库"""
+    try:
+        # 默认图片列表
+        default_images = [
+            {"filename": "photo1.png", "url": "/assets/images/photo1.png"},
+            {"filename": "photo2.jpg", "url": "/assets/images/photo2.jpg"},
+            {"filename": "photo3.jpg", "url": "/assets/images/photo3.jpg"},
+        ]
+        
+        for img_data in default_images:
+            # 检查是否已存在
+            existing = db.query(Image).filter(Image.filename == img_data["filename"]).first()
+            if existing:
+                print(f"  图片 '{img_data['filename']}' 已存在，跳过")
+                continue
+            
+            # 创建图片记录
+            image = Image(
+                filename=img_data["filename"],
+                url=img_data["url"]
+            )
+            db.add(image)
+            print(f"  ✓ 图片 '{img_data['filename']}' 已导入")
+        
+        db.commit()
+        print("  ✓ 默认图片导入完成")
+    except Exception as e:
+        print(f"  ✗ 导入默认图片失败: {e}")
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise
+
+
 def check_database_status(db: Session, models):
     """检查数据库各表的状态"""
     Profile, ProjectCategory, Project, Experience, SkillCategory, Skill, SocialLink = models
@@ -454,7 +489,7 @@ def init_database():
     print("="*50)
     
     try:
-        Profile, ProjectCategory, Project, Experience, SkillCategory, Skill, SocialLink, SessionLocal, User = get_models()
+        Profile, ProjectCategory, Project, Experience, SkillCategory, Skill, SocialLink, SessionLocal, User, Image = get_models()
     except Exception as e:
         print(f"  ✗ 导入模型失败: {e}")
         import traceback
@@ -491,6 +526,9 @@ def init_database():
         # 导入 AdminUser 模型
         from main import AdminUser
         init_default_admin(db, AdminUser)
+        
+        print("\n10. 导入默认图片:")
+        init_default_images(db, Image)
         
         print("\n" + "="*50)
         print("数据库初始化完成！")
